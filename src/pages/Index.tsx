@@ -13,7 +13,6 @@ const Index = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
-    // Add form submission logic here
   };
 
   return (
@@ -22,6 +21,12 @@ const Index = () => {
       
       {/* Hero Section */}
       <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1470813740244-df37b8c1edcb")',
+          }}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black z-10" />
         <div className="container mx-auto px-4 relative z-20 text-center">
           <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 animate-fade-in">
@@ -54,9 +59,12 @@ const Index = () => {
                 connected to the music you love.
               </p>
             </div>
-            <div className="aspect-video bg-rock-light rounded-lg overflow-hidden">
-              {/* Add studio image here */}
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-rock-dark" />
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" 
+                alt="Radio Studio" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -77,12 +85,57 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-white mb-12 text-center">Our Sponsors</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((sponsor) => (
+            {[
+              'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f',
+              'https://images.unsplash.com/photo-1542744173-8e7e53415bb0',
+              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab',
+              'https://images.unsplash.com/photo-1554469384-e58fac16e23a'
+            ].map((image, index) => (
               <div
-                key={sponsor}
-                className="aspect-video bg-rock-light rounded-lg flex items-center justify-center"
+                key={index}
+                className="aspect-video bg-rock-light rounded-lg overflow-hidden"
               >
-                <span className="text-gray-500">Sponsor Logo</span>
+                <img src={image} alt={`Sponsor ${index + 1}`} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Shows Section */}
+      <section id="live-shows" className="py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-white mb-12 text-center">Live Shows</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Morning Rock",
+                time: "6:00 AM - 10:00 AM",
+                dj: "Alex Thunder",
+                image: "https://images.unsplash.com/photo-1516223725307-6f76b9ec8742"
+              },
+              {
+                title: "Afternoon Drive",
+                time: "2:00 PM - 6:00 PM",
+                dj: "Sarah Storm",
+                image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad"
+              },
+              {
+                title: "Night Rocks",
+                time: "8:00 PM - 12:00 AM",
+                dj: "Mike Lightning",
+                image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4"
+              }
+            ].map((show, index) => (
+              <div key={index} className="bg-rock-light rounded-lg overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
+                <div className="aspect-video">
+                  <img src={show.image} alt={show.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{show.title}</h3>
+                  <p className="text-gray-400 mb-1">{show.time}</p>
+                  <p className="text-primary">with {show.dj}</p>
+                </div>
               </div>
             ))}
           </div>
