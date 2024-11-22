@@ -7,6 +7,7 @@ import { fetchAlbumArtwork } from '@/utils/albumArtwork';
 
 const STREAM_URL = 'https://therock-airserv.radioca.st/;stream.mp3';
 const METADATA_CHECK_INTERVAL = 5000; // Check every 5 seconds
+const METADATA_UPDATE_DELAY = 25000; // 25 seconds delay for metadata updates
 
 const AudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -20,6 +21,8 @@ const AudioPlayer = () => {
   });
   const [albumArtwork, setAlbumArtwork] = useState<string>('/placeholder.svg');
   const metadataIntervalRef = useRef<NodeJS.Timeout>();
+  const pendingUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const [pendingMetadata, setPendingMetadata] = useState<RadioMetadata | null>(null);
 
   const updateMetadata = async () => {
     try {
@@ -30,13 +33,28 @@ const AudioPlayer = () => {
                              metadata.artist !== currentTrack.artist;
       
       if (hasTrackChanged) {
-        console.log('Track changed, updating UI with new track:', metadata);
-        setCurrentTrack(metadata);
+        console.log('Track changed, scheduling update in 25 seconds:', metadata);
         
-        if (metadata.artist !== 'The Rock Radio' && metadata.title !== 'Loading...') {
-          const artwork = await fetchAlbumArtwork(metadata.artist, metadata.title);
-          setAlbumArtwork(artwork);
+        // Clear any existing pending update
+        if (pendingUpdateTimeoutRef.current) {
+          clearTimeout(pendingUpdateTimeoutRef.current);
         }
+        
+        // Store the pending metadata
+        setPendingMetadata(metadata);
+        
+        // Schedule the update
+        pendingUpdateTimeoutRef.current = setTimeout(async () => {
+          console.log('Applying delayed metadata update:', metadata);
+          setCurrentTrack(metadata);
+          
+          if (metadata.artist !== 'The Rock Radio' && metadata.title !== 'Loading...') {
+            const artwork = await fetchAlbumArtwork(metadata.artist, metadata.title);
+            setAlbumArtwork(artwork);
+          }
+          
+          setPendingMetadata(null);
+        }, METADATA_UPDATE_DELAY);
       }
     } catch (error) {
       console.error('Failed to update metadata:', error);
@@ -49,6 +67,7 @@ const AudioPlayer = () => {
 
     return () => {
       clearInterval(metadataIntervalRef.current);
+      clearTimeout(pendingUpdateTimeoutRef.current);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -112,6 +131,11 @@ const AudioPlayer = () => {
         />
         <h2 className="text-white font-bold text-xl truncate mb-1">{currentTrack.title}</h2>
         <p className="text-gray-400 text-sm truncate">{currentTrack.artist}</p>
+        {pendingMetadata && (
+          <p className="text-primary text-xs mt-2">
+            Next track: {pendingMetadata.title} - {pendingMetadata.artist}
+          </p>
+        )}
       </div>
       
       <div className="flex items-center justify-between gap-4">

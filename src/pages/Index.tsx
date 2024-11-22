@@ -61,7 +61,7 @@ const Index = () => {
             </div>
             <div className="aspect-video rounded-lg overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" 
+                src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04" 
                 alt="Radio Studio" 
                 className="w-full h-full object-cover"
               />
@@ -95,14 +95,13 @@ const Index = () => {
                 key={index}
                 className="aspect-video bg-rock-light rounded-lg overflow-hidden"
               >
-                <img src={image} alt={`Sponsor ${index + 1}`} className="w-full h-full object-cover" />
+                <img src={image} alt={`Sponsor ${index + 1}`} className="w-full h-full object-cover opacity-75 hover:opacity-100 transition-opacity" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Live Shows Section */}
       <section id="live-shows" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-white mb-12 text-center">Live Shows</h2>
