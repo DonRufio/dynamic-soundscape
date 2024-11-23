@@ -15,7 +15,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename={isProduction ? "/" : "/"}>
+        <BrowserRouter basename={isProduction ? "/dynamic-soundscape/" : "/"}>
           <Routes>
             <Route path="/" element={<Index />} />
           </Routes>
