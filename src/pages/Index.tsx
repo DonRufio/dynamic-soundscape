@@ -33,7 +33,7 @@ const Index = () => {
             THE <span className="text-primary">ROCK</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 animate-fade-in">
-            Your Ultimate Rock Music Destination
+            Your Ultimate Rocker Music Destination
           </p>
           <a
             href="#listen"
