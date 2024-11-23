@@ -6,8 +6,7 @@ import { fetchRadioMetadata, type RadioMetadata } from '@/utils/radioMetadata';
 import { fetchAlbumArtwork } from '@/utils/albumArtwork';
 
 const STREAM_URL = 'https://therock-airserv.radioca.st/;stream.mp3';
-const METADATA_CHECK_INTERVAL = 5000; // Check every 5 seconds
-const METADATA_UPDATE_DELAY = 25000; // 25 seconds delay for metadata updates
+const METADATA_CHECK_INTERVAL = 5000; // Poll every 5 seconds
 
 const AudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -20,89 +19,95 @@ const AudioPlayer = () => {
     artist: 'The Rock Radio'
   });
   const [albumArtwork, setAlbumArtwork] = useState<string>('./placeholder.svg');
-  const metadataIntervalRef = useRef<NodeJS.Timeout>();
-  const pendingUpdateTimeoutRef = useRef<NodeJS.Timeout>();
-  const [pendingMetadata, setPendingMetadata] = useState<RadioMetadata | null>(null);
+
+  const metadataIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateMetadata = async () => {
     try {
       const metadata = await fetchRadioMetadata();
       console.log('Fetched new metadata:', metadata);
-      
-      const hasTrackChanged = metadata.title !== currentTrack.title || 
-                             metadata.artist !== currentTrack.artist;
-      
+  
+      // Skip if it's still in the "Loading..." state
+      if (metadata.title === 'Loading...' && metadata.artist === 'The Rock Radio') {
+        console.log('Skipping update, metadata is still loading...');
+        return;
+      }
+  
+      // Normalize the strings to avoid issues with leading/trailing spaces or casing
+      const normalizedTitle = metadata.title.trim().toLowerCase();
+      const normalizedArtist = metadata.artist.trim().toLowerCase();
+      const currentNormalizedTitle = currentTrack.title.trim().toLowerCase();
+      const currentNormalizedArtist = currentTrack.artist.trim().toLowerCase();
+  
+      // Check if the track has changed
+      const hasTrackChanged = normalizedTitle !== currentNormalizedTitle || normalizedArtist !== currentNormalizedArtist;
+  
       if (hasTrackChanged) {
-        console.log('Track changed, scheduling update in 25 seconds:', metadata);
-        
-        // Clear any existing pending update
-        if (pendingUpdateTimeoutRef.current) {
-          clearTimeout(pendingUpdateTimeoutRef.current);
+        console.log('Track changed, updating metadata:', metadata);
+  
+        // Update the current track state with the new metadata
+        setCurrentTrack(metadata);
+  
+        // Fetch album artwork if artist and title are valid
+        if (metadata.artist !== 'The Rock Radio' && metadata.title !== 'Loading...') {
+          const artwork = await fetchAlbumArtwork(metadata.artist, metadata.title);
+          setAlbumArtwork(artwork);
         }
-        
-        // Store the pending metadata
-        setPendingMetadata(metadata);
-        
-        // Schedule the update
-        pendingUpdateTimeoutRef.current = setTimeout(async () => {
-          console.log('Applying delayed metadata update:', metadata);
-          setCurrentTrack(metadata);
-          
-          if (metadata.artist !== 'The Rock Radio' && metadata.title !== 'Loading...') {
-            const artwork = await fetchAlbumArtwork(metadata.artist, metadata.title);
-            setAlbumArtwork(artwork);
-          }
-          
-          setPendingMetadata(null);
-        }, METADATA_UPDATE_DELAY);
       }
     } catch (error) {
       console.error('Failed to update metadata:', error);
     }
   };
-
+  
   useEffect(() => {
-    audioRef.current = new Audio(STREAM_URL);
-    audioRef.current.volume = volume;
-
+    console.log('Current track data:', currentTrack); // Log current track on each render
+  
+    if (!audioRef.current) {
+      audioRef.current = new Audio(STREAM_URL);
+      audioRef.current.volume = volume;
+    }
+  
+    if (isPlaying) {
+      // Poll for metadata updates every 5 seconds if the audio is playing
+      metadataIntervalRef.current = setInterval(updateMetadata, METADATA_CHECK_INTERVAL);
+    }
+  
     return () => {
-      clearInterval(metadataIntervalRef.current);
-      clearTimeout(pendingUpdateTimeoutRef.current);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      if (metadataIntervalRef.current) {
+        clearInterval(metadataIntervalRef.current);
       }
     };
-  }, []);
+  }, [volume, isPlaying, currentTrack]);
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
+        // Stop the audio stream
         audioRef.current.pause();
-        if (metadataIntervalRef.current) {
-          clearInterval(metadataIntervalRef.current);
-        }
         toast({
           title: "Playback stopped",
           description: "The Rock Radio stream has been paused",
         });
+        setIsPlaying(false);
       } else {
-        audioRef.current.play().catch(error => {
-          console.error('Playback failed:', error);
-          toast({
-            variant: "destructive",
-            title: "Playback failed",
-            description: "Unable to play the radio stream. Please try again.",
+        if (audioRef.current.paused) {
+          // Start or resume the audio stream
+          audioRef.current.play().catch(error => {
+            console.error('Playback failed:', error);
+            toast({
+              variant: "destructive",
+              title: "Playback failed",
+              description: "Unable to play the radio stream. Please try again.",
+            });
           });
-        });
-        updateMetadata();
-        metadataIntervalRef.current = setInterval(updateMetadata, METADATA_CHECK_INTERVAL);
+        }
         toast({
           title: "Now playing",
           description: "The Rock Radio is now streaming",
         });
+        updateMetadata(); // Update metadata immediately when play is clicked
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -131,11 +136,6 @@ const AudioPlayer = () => {
         />
         <h2 className="text-white font-bold text-xl truncate mb-1">{currentTrack.title}</h2>
         <p className="text-gray-400 text-sm truncate">{currentTrack.artist}</p>
-        {pendingMetadata && (
-          <p className="text-primary text-xs mt-2">
-            Next track: {pendingMetadata.title} - {pendingMetadata.artist}
-          </p>
-        )}
       </div>
       
       <div className="flex items-center justify-between gap-4">
