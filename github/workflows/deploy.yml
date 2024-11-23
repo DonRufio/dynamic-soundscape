@@ -1,0 +1,99 @@
+name: Build and Deploy React/Vite App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+      fail-fast: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --passWithNoTests
+        if: always() && hashFiles('**/test/**') != ''
+
+      - name: Build Vite app
+        run: npm run build
+        env:
+          CI: false
+
+      - name: Verify build
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: Build failed - dist directory not found"
+            exit 1
+          fi
+
+      - name: Zip build files
+        run: |
+          cd dist
+          zip -r ../vite-app.zip *
+        shell: bash
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vite-app-build
+          path: |
+            vite-app.zip
+            dist/
+          if-no-files-found: error
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist
+          clean: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: vite-app.zip
+          tag_name: v${{ github.run_number }}
+          name: "Release v${{ github.run_number }}"
+          body: |
+            Vite App Release v${{ github.run_number }}
+            
+            This release includes:
+            - Built Vite application package
+            
+            To use:
+            1. Download the vite-app.zip file
+            2. Unzip the file
+            3. Deploy the contents to your hosting provider
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Handle Errors
+        if: failure()
+        run: |
+          echo "Workflow failed. Please check the build logs for more information."
+          exit 1
