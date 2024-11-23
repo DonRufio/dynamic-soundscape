@@ -19,7 +19,7 @@ const AudioPlayer = () => {
     title: 'Loading...',
     artist: 'The Rock Radio'
   });
-  const [albumArtwork, setAlbumArtwork] = useState<string>('/placeholder.svg');
+  const [albumArtwork, setAlbumArtwork] = useState<string>('./placeholder.svg');
   const metadataIntervalRef = useRef<NodeJS.Timeout>();
   const pendingUpdateTimeoutRef = useRef<NodeJS.Timeout>();
   const [pendingMetadata, setPendingMetadata] = useState<RadioMetadata | null>(null);

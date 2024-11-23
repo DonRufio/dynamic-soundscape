@@ -16,7 +16,7 @@ const Navbar = () => {
     <nav className="fixed w-full bg-black/90 backdrop-blur-sm z-50 px-4 py-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
-          <img src="/lovable-uploads/c5c64744-48a8-4379-b071-59b71194ebb5.png" alt="The Rock" className="h-12" />
+          <img src="./lovable-uploads/c5c64744-48a8-4379-b071-59b71194ebb5.png" alt="The Rock" className="h-12" />
         </div>
 
         {/* Desktop Navigation */}
