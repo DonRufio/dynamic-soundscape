@@ -5,32 +5,38 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => {
   const base = mode === "production" ? "/dynamic-soundscape/" : "/";
-  
 
-  
   return {
     server: {
-      host: "::", // Use IPv6 host or switch to "0.0.0.0" if preferred
+      host: "0.0.0.0", // Universal host for IPv4 and IPv6 compatibility
       port: 8080,
     },
-    base: base, // Set the base path based on the mode
+    base: base,
     plugins: [
       react(),
-      mode === "development" && componentTagger(), // Include only in development
-    ].filter(Boolean), // Filter out falsy values
+      mode === "development" &&
+        (() => {
+          try {
+            return componentTagger();
+          } catch (error) {
+            console.warn("Failed to load componentTagger plugin:", error);
+            return null;
+          }
+        })(),
+    ].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
     optimizeDeps: {
-      include: ["@floating-ui/react-dom"], // Optimize the dependency for development
+      include: ["@floating-ui/react-dom"],
     },
     build: {
+      sourcemap: mode === "development",
       rollupOptions: {
-        external: [], // Include all dependencies in the build
+        external: [],
       },
     },
   };
 });
-
