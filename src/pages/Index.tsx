@@ -24,7 +24,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1470813740244-df37b8c1edcb")',
+            backgroundImage: 'url("./images/bg1.jpg")',
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black z-10" />
@@ -33,7 +33,7 @@ const Index = () => {
             THE <span className="text-primary">ROCK</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 animate-fade-in">
-            Your Ultimate Rocker Music Destination
+            Where Great Rock Lives
           </p>
           <a
             href="#listen"
@@ -55,13 +55,12 @@ const Index = () => {
                 we're your premier destination for everything rock.
               </p>
               <p className="text-gray-300">
-                Our passionate team of DJs and music experts curate the perfect mix of rock genres, ensuring you stay
-                connected to the music you love.
+                The Rock is committed to delivering the worlds best selection of rock music ,whilst giving a new home to irish rock and metal bands.
               </p>
             </div>
             <div className="aspect-video rounded-lg overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04" 
+                src="./images/aboutus.jpg" 
                 alt="Radio Studio" 
                 className="w-full h-full object-cover"
               />
