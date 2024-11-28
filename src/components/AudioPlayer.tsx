@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { fetchRadioMetadata, type RadioMetadata } from '@/utils/radioMetadata';
 import { fetchAlbumArtwork } from '@/utils/albumArtwork';
+import { fetchStreamHistory, type StreamHistory } from '@/utils/streamHistory';
 
 const STREAM_URL = 'https://therock-airserv.radioca.st/;stream.mp3';
 const METADATA_CHECK_INTERVAL = 5000; // Poll every 5 seconds
@@ -20,12 +21,16 @@ const AudioPlayer = () => {
     artist: 'The Rock Radio',
   });
   const [albumArtwork, setAlbumArtwork] = useState<string>('./placeholder.svg');
+  const [streamHistory, setStreamHistory] = useState<StreamHistory>([]); // State for stream history
   const metadataIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const updateMetadata = async () => {
+  const updateMetadataAndHistory = async () => {
     try {
       const metadata = await fetchRadioMetadata();
       console.log('Fetched new metadata:', metadata);
+
+      const history = await fetchStreamHistory();
+      console.log('Fetched stream history:', history);
 
       // Skip if it's still in the "Loading..." state
       if (metadata.title === 'Loading...' && metadata.artist === 'The Rock Radio') {
@@ -33,7 +38,7 @@ const AudioPlayer = () => {
         return;
       }
 
-      // Normalize the strings to avoid issues with leading/trailing spaces or casing
+      // Normalize strings to avoid issues with leading/trailing spaces or casing
       const normalizedTitle = metadata.title.trim().toLowerCase();
       const normalizedArtist = metadata.artist.trim().toLowerCase();
       const currentNormalizedTitle = currentTrack.title.trim().toLowerCase();
@@ -54,8 +59,11 @@ const AudioPlayer = () => {
           await new Promise(resolve => setTimeout(resolve, 35000));
         }
 
-        // Update the current track state with the new metadata
+        // Update current track state
         setCurrentTrack(metadata);
+
+        // Update stream history
+        setStreamHistory(history);
 
         // Fetch album artwork if artist and title are valid
         if (metadata.artist !== 'The Rock Radio' && metadata.title !== 'Loading...') {
@@ -64,14 +72,13 @@ const AudioPlayer = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to update metadata:', error);
+      console.error('Failed to update metadata or stream history:', error);
     }
   };
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
-        // Stop the audio stream
         audioRef.current.pause();
         setIsPlaying(false);
         setPlayStartTime(null); // Reset playback start time
@@ -81,12 +88,11 @@ const AudioPlayer = () => {
         });
       } else {
         if (audioRef.current.paused) {
-          // Start or resume the audio stream
           audioRef.current
             .play()
             .then(() => {
               setPlayStartTime(Date.now()); // Record playback start time
-              updateMetadata(); // Update metadata immediately when play is clicked
+              updateMetadataAndHistory(); // Update metadata immediately when play is clicked
               setIsPlaying(true);
             })
             .catch(error => {
@@ -112,20 +118,19 @@ const AudioPlayer = () => {
 
   const toggleMute = () => {
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted; // Toggle muted property
-      setIsMuted(!isMuted); // Update state
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
     }
   };
 
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio(STREAM_URL);
-      audioRef.current.volume = volume; // Set initial volume to 50%
+      audioRef.current.volume = volume;
     }
 
     if (isPlaying) {
-      // Poll for metadata updates every 5 seconds if the audio is playing
-      metadataIntervalRef.current = setInterval(updateMetadata, METADATA_CHECK_INTERVAL);
+      metadataIntervalRef.current = setInterval(updateMetadataAndHistory, METADATA_CHECK_INTERVAL);
     }
 
     return () => {
@@ -136,43 +141,65 @@ const AudioPlayer = () => {
   }, [volume, isPlaying]);
 
   return (
-    <div className="w-full max-w-md bg-rock-dark p-6 rounded-lg shadow-xl">
-      <div className="mb-6">
-        <img
-          src={albumArtwork}
-          alt="Album Art"
-          className="w-full aspect-square object-cover rounded-lg mb-4 shadow-lg"
-        />
-        <h2 className="text-white font-bold text-xl truncate mb-1">{currentTrack.title}</h2>
-        <p className="text-gray-400 text-sm truncate">{currentTrack.artist}</p>
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <button
-          onClick={togglePlay}
-          className="bg-primary hover:bg-primary-dark text-white p-3 rounded-full transition-colors"
-        >
-          {isPlaying ? <Square size={24} /> : <Play size={24} />}
-        </button>
-
-        <div className="flex items-center gap-4 flex-1">
-          <button
-            onClick={toggleMute}
-            className="text-white hover:text-primary transition-colors"
-          >
-            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-          </button>
-          <Slider
-            value={[volume]}
-            max={1}
-            step={0.01}
-            onValueChange={handleVolumeChange}
-            className="flex-1"
+    <div className="w-full max-w-8xl bg-rock-dark p-8 rounded-lg shadow-xl flex flex-col lg:flex-row gap-10">
+      {/* Player Section */}
+      <div className="w-full lg:w-1/2 flex-shrink-0 pr-8">
+        <div className="mb-6">
+          <img
+            src={albumArtwork}
+            alt="Album Art"
+            className="w-full aspect-square object-cover rounded-lg mb-4 shadow-lg"
           />
+          <h2 className="text-white font-bold text-xl truncate mb-1">{currentTrack.title}</h2>
+          <p className="text-gray-400 text-sm truncate">{currentTrack.artist}</p>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <button
+            onClick={togglePlay}
+            className="bg-primary hover:bg-primary-dark text-white p-3 rounded-full transition-colors"
+          >
+            {isPlaying ? <Square size={24} /> : <Play size={24} />}
+          </button>
+
+          <div className="flex items-center gap-4 flex-1">
+            <button
+              onClick={toggleMute}
+              className="text-white hover:text-primary transition-colors"
+            >
+              {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
+            <Slider
+              value={[volume]}
+              max={1}
+              step={0.01}
+              onValueChange={handleVolumeChange}
+              className="flex-1"
+            />
+          </div>
         </div>
       </div>
+
+      {/* Stream History Section */}
+      <div className="w-full lg:w-1/2 bg-rock-light p-8 rounded-lg shadow-md overflow-hidden">
+  <h3 className="text-white font-bold text-lg mb-4">Recently Played</h3>
+  <div className="space-y-2 text-xs max-h-64 ">
+    {streamHistory.slice(1).map((entry, index) => (
+      <div
+        key={index}
+        className="p-1 bg-rock-dark rounded-md shadow-sm flex items-center"
+      >
+        <span className="text-gray-400 font-medium truncate mr-2 w-1/4">{entry.time}</span>
+        <span className="text-white truncate flex-1 w-3/4" >{entry.title}</span>
+      </div>
+    ))}
+  </div>
+</div>
     </div>
   );
+  
+  
 };
 
 export default AudioPlayer;
+
