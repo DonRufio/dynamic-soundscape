@@ -24,7 +24,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url("./images/bg1.jpg")',
+            backgroundImage: 'url("./images/bg2.jpg")',
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black z-10" />
@@ -85,10 +85,10 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-white mb-12 text-center">Our Sponsors</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f',
-              'https://images.unsplash.com/photo-1542744173-8e7e53415bb0',
-              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab',
-              'https://images.unsplash.com/photo-1554469384-e58fac16e23a'
+              './images/sp1.jpg',
+              './images/sp2.jpg',
+              './images/sp3.jpg',
+              './images/sp4.jpg'
             ].map((image, index) => (
               <div
                 key={index}
@@ -110,19 +110,19 @@ const Index = () => {
                 title: "Morning Rock",
                 time: "6:00 AM - 10:00 AM",
                 dj: "Alex Thunder",
-                image: "https://images.unsplash.com/photo-1516223725307-6f76b9ec8742"
+                image: "./images/show1.jpg"
               },
               {
                 title: "Afternoon Drive",
                 time: "2:00 PM - 6:00 PM",
                 dj: "Sarah Storm",
-                image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad"
+                image: "./images/show2.jpg"
               },
               {
                 title: "Night Rocks",
                 time: "8:00 PM - 12:00 AM",
                 dj: "Mike Lightning",
-                image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4"
+                image: "./images/show3.jpg"
               }
             ].map((show, index) => (
               <div key={index} className="bg-rock-light rounded-lg overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">

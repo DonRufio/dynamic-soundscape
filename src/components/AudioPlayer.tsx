@@ -20,7 +20,7 @@ const AudioPlayer = () => {
     title: 'Loading...',
     artist: 'The Rock Radio',
   });
-  const [albumArtwork, setAlbumArtwork] = useState<string>('./placeholder.svg');
+  const [albumArtwork, setAlbumArtwork] = useState<string>('./placeholder.jpg');
   const [streamHistory, setStreamHistory] = useState<StreamHistory>([]); // State for stream history
   const metadataIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -189,8 +189,8 @@ const AudioPlayer = () => {
         key={index}
         className="p-1 bg-rock-dark rounded-md shadow-sm flex items-center"
       >
-        <span className="text-gray-400 font-medium truncate mr-2 w-1/4">{entry.time}</span>
-        <span className="text-white truncate flex-1 w-3/4" >{entry.title}</span>
+        <span className="text-gray-400 font-medium truncate mr-2 w-1/6">{entry.time}</span>
+        <span className="text-white truncate flex-1 w-5/6" >{entry.title}</span>
       </div>
     ))}
   </div>

@@ -29,9 +29,9 @@ export const fetchAlbumArtwork = async (artist: string, track: string): Promise<
     }
 
     console.log('No album artwork found, using placeholder');
-    return '/placeholder.svg';
+    return '/placeholder.jpg';
   } catch (error) {
     console.error('Error fetching album artwork:', error);
-    return '/placeholder.svg';
+    return '/placeholder.jpg';
   }
 };
