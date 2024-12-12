@@ -12,7 +12,7 @@ const METADATA_CHECK_INTERVAL = 5000; // Poll every 5 seconds
 const AudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5); // Default volume to 50%
+  const [volume, setVolume] = useState(0.25); // Default volume to 50%
   const [isMuted, setIsMuted] = useState(false);
   const [playStartTime, setPlayStartTime] = useState<number | null>(null); // Tracks playback start time
   const { toast } = useToast();
